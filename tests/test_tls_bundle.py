@@ -121,3 +121,66 @@ def test_the_ai_requests_carry_a_verifying_context(monkeypatch):
     ctx = seen["context"]
     assert isinstance(ctx, ssl.SSLContext)
     assert ctx.verify_mode == ssl.CERT_REQUIRED and ctx.check_hostname
+
+
+def test_windows_adds_certifi_to_its_store(monkeypatch, tmp_path):
+    # A fresh Windows lacks roots it fetches on demand for its own programs,
+    # and Python only reads the store as it is: the catalog failed with
+    # CERTIFICATE_VERIFY_FAILED (#783). certifi's bundle goes on top.
+    import ssl
+    bundle = tmp_path / "cacert.pem"
+    bundle.write_text("")
+    loaded: list = []
+    monkeypatch.setattr(tls, "_certifi", lambda: str(bundle))
+    monkeypatch.setattr(ssl.SSLContext, "load_verify_locations",
+                        lambda self, cafile=None, **_kw: loaded.append(cafile))
+    context = tls.https_context(platform="win32")
+    assert isinstance(context, ssl.SSLContext)
+    assert context.verify_mode == ssl.CERT_REQUIRED
+    assert loaded == [str(bundle)]
+
+
+def test_windows_without_certifi_keeps_the_store(monkeypatch):
+    import ssl
+    loaded: list = []
+    monkeypatch.setattr(tls, "_certifi", lambda: None)
+    monkeypatch.setattr(ssl.SSLContext, "load_verify_locations",
+                        lambda self, cafile=None, **_kw: loaded.append(cafile))
+    context = tls.https_context(platform="win32")
+    assert context.verify_mode == ssl.CERT_REQUIRED
+    assert loaded == []
+
+
+def test_the_catalog_and_the_library_verify_with_that_context(monkeypatch):
+    # Both went through urlopen with no context, so the bundle above never
+    # reached them.
+    import urllib.request
+
+    from core import extension_manager, library
+
+    marker = object()
+    seen: list = []
+
+    class _Resp:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def geturl(self):
+            return "https://example.org/x"
+
+        def read(self, *_a):
+            return b"{}"
+
+    def fake_urlopen(req, timeout=None, context=None):
+        seen.append(context)
+        return _Resp()
+
+    monkeypatch.setattr(tls, "https_context", lambda *a, **k: marker)
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setenv("INGETRAZO_LIBRARY", "https://example.org/biblioteca")
+    extension_manager._get("https://example.org/x", 100)
+    library._get("index.json")
+    assert seen == [marker, marker]

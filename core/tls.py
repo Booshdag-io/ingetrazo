@@ -78,11 +78,24 @@ def ensure_ca_bundle(paths=None, candidates=SYSTEM_BUNDLES,
     return None
 
 
-def https_context() -> ssl.SSLContext:
+def https_context(platform: str | None = None) -> ssl.SSLContext:
     """A verifying context for ``urlopen(context=…)``, loaded from the
     bundle :func:`ensure_ca_bundle` chose when there is one. Passing it
     explicitly does not depend on OpenSSL reading ``SSL_CERT_FILE`` again —
-    it caches the default path once a connection has been tried."""
+    it caches the default path once a connection has been tried.
+
+    On Windows the store is read as it is, and ``certifi``'s bundle is
+    added on top when it ships: Python only enumerates the roots the store
+    already holds, while Windows fetches a missing root on demand for its
+    own programs — so on a fresh install the catalog failed with
+    CERTIFICATE_VERIFY_FAILED until a browser had visited GitHub (#783)."""
+    platform = platform or sys.platform
+    if platform.startswith("win"):
+        context = ssl.create_default_context()
+        bundle = _certifi()
+        if bundle:
+            context.load_verify_locations(cafile=bundle)
+        return context
     ensure_once()
     bundle = os.environ.get("SSL_CERT_FILE")
     if bundle and Path(bundle).is_file():

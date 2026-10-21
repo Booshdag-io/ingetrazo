@@ -233,6 +233,12 @@ hiddenimports += collect_submodules('openskp')
 # .skp export; main.py --check fails a frozen bundle that still carries it.
 datas += [(src, dst) for src, dst in collect_data_files('openskp')
           if '_scaffold' not in src.replace('\\', '/')]
+# certifi's CA bundle, when the build has it (the Windows build installs
+# it): core.tls adds it to the Windows store, which Python only reads as it
+# is — a fresh Windows lacks roots it would fetch on demand (#783).
+if _ilu.find_spec('certifi') is not None:
+    hiddenimports += ['certifi']
+    datas += collect_data_files('certifi')
 # openskp 1.3.0 triangulates with mapbox_earcut instead of Shapely, so the
 # reader now pulls a NATIVE extension (_core*.so) that did not exist in the
 # dependency tree before. ``import openskp`` fails outright without it, so
