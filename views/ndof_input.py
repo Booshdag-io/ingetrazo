@@ -207,9 +207,109 @@ def parse_spnav_packets(data: bytes) -> list:
 
 WM_INPUT = 0x00FF
 RID_INPUT = 0x10000003
+RIDI_DEVICEINFO = 0x2000000B
 RIM_TYPEHID = 2
 HID_USAGE_PAGE_GENERIC = 0x01
 HID_USAGE_MULTI_AXIS = 0x08
+# RID_DEVICE_INFO: cbSize, dwType, then the union; for a HID the union is
+# vendor, product, version (three DWORDs), usage page, usage (two USHORTs).
+# The union is as wide as its keyboard member (six DWORDs): 32 bytes in all.
+_RID_DEVICE_INFO_SIZE = 32
+
+
+def is_multi_axis_info(info: bytes) -> bool:
+    """Whether one RID_DEVICE_INFO describes a 3D mouse: a HID device on
+    the generic desktop page with the multi-axis controller usage."""
+    if len(info) < 24:
+        return False
+    dw_type = struct.unpack_from("<I", info, 4)[0]
+    if dw_type != RIM_TYPEHID:
+        return False
+    page, usage = struct.unpack_from("<HH", info, 20)
+    return page == HID_USAGE_PAGE_GENERIC and usage == HID_USAGE_MULTI_AXIS
+
+
+_win = None
+
+
+def _win_api():
+    """The Win32 types and functions Raw Input needs, built ONCE. They used
+    to be built inside the message handler — two new ctypes classes for
+    every native message of the application (each mouse move, each paint),
+    a flood of garbage that made the collector run right there (#751)."""
+    global _win
+    if _win is not None:
+        return _win
+    import ctypes
+    from ctypes import wintypes
+    from types import SimpleNamespace
+
+    class MSG(ctypes.Structure):
+        _fields_ = [("hwnd", wintypes.HWND), ("message", wintypes.UINT),
+                    ("wParam", wintypes.WPARAM),
+                    ("lParam", wintypes.LPARAM),
+                    ("time", wintypes.DWORD), ("pt", wintypes.POINT)]
+
+    class RAWINPUTHEADER(ctypes.Structure):
+        _fields_ = [("dwType", wintypes.DWORD), ("dwSize", wintypes.DWORD),
+                    ("hDevice", wintypes.HANDLE),
+                    ("wParam", wintypes.WPARAM)]
+
+    class RAWINPUTDEVICE(ctypes.Structure):
+        _fields_ = [("usUsagePage", wintypes.USHORT),
+                    ("usUsage", wintypes.USHORT),
+                    ("dwFlags", wintypes.DWORD),
+                    ("hwndTarget", wintypes.HWND)]
+
+    class RAWINPUTDEVICELIST(ctypes.Structure):
+        _fields_ = [("hDevice", wintypes.HANDLE), ("dwType", wintypes.DWORD)]
+
+    user32 = ctypes.windll.user32
+    # Handles are pointer-sized: without argtypes ctypes passes an int and a
+    # 64-bit handle overflows.
+    user32.GetRawInputDeviceList.argtypes = [
+        ctypes.c_void_p, ctypes.POINTER(wintypes.UINT), wintypes.UINT]
+    user32.GetRawInputDeviceList.restype = wintypes.UINT
+    user32.GetRawInputDeviceInfoW.argtypes = [
+        wintypes.HANDLE, wintypes.UINT, ctypes.c_void_p,
+        ctypes.POINTER(wintypes.UINT)]
+    user32.GetRawInputDeviceInfoW.restype = wintypes.UINT
+    _win = SimpleNamespace(ctypes=ctypes, wintypes=wintypes, user32=user32,
+                           MSG=MSG, RAWINPUTHEADER=RAWINPUTHEADER,
+                           RAWINPUTDEVICE=RAWINPUTDEVICE,
+                           RAWINPUTDEVICELIST=RAWINPUTDEVICELIST,
+                           header_size=ctypes.sizeof(RAWINPUTHEADER))
+    return _win
+
+
+def _multi_axis_present() -> bool:
+    """Whether Windows lists a 3D mouse right now. Registering for one
+    succeeds with no device at all, so without this check every Windows
+    user ran the message filter."""
+    w = _win_api()
+    ctypes, wintypes, user32 = w.ctypes, w.wintypes, w.user32
+    count = wintypes.UINT(0)
+    item = ctypes.sizeof(w.RAWINPUTDEVICELIST)
+    if user32.GetRawInputDeviceList(None, ctypes.byref(count), item) != 0:
+        return False
+    if count.value == 0:
+        return False
+    devices = (w.RAWINPUTDEVICELIST * count.value)()
+    got = user32.GetRawInputDeviceList(devices, ctypes.byref(count), item)
+    if got == 0xFFFFFFFF:
+        return False
+    for dev in devices[:got]:
+        if dev.dwType != RIM_TYPEHID:
+            continue
+        buf = ctypes.create_string_buffer(_RID_DEVICE_INFO_SIZE)
+        struct.pack_into("<I", buf, 0, _RID_DEVICE_INFO_SIZE)
+        size = wintypes.UINT(_RID_DEVICE_INFO_SIZE)
+        if user32.GetRawInputDeviceInfoW(dev.hDevice, RIDI_DEVICEINFO, buf,
+                                         ctypes.byref(size)) == 0xFFFFFFFF:
+            continue
+        if is_multi_axis_info(buf.raw):
+            return True
+    return False
 
 
 def parse_hid_report(report: bytes, state: dict) -> NdofSample | None:
@@ -248,20 +348,15 @@ class RawInputBackend:
         self.state: dict = {}
 
     def open(self) -> bool:
-        import ctypes
-        from ctypes import wintypes
         from PySide6.QtCore import QAbstractNativeEventFilter, QCoreApplication
 
-        class RAWINPUTDEVICE(ctypes.Structure):
-            _fields_ = [("usUsagePage", wintypes.USHORT),
-                        ("usUsage", wintypes.USHORT),
-                        ("dwFlags", wintypes.DWORD),
-                        ("hwndTarget", wintypes.HWND)]
-
-        user32 = ctypes.windll.user32
-        dev = RAWINPUTDEVICE(HID_USAGE_PAGE_GENERIC, HID_USAGE_MULTI_AXIS,
-                             0, None)      # follow the keyboard focus
-        if not user32.RegisterRawInputDevices(
+        if not _multi_axis_present():
+            return False                  # no 3D mouse: no filter at all
+        w = _win_api()
+        ctypes = w.ctypes
+        dev = w.RAWINPUTDEVICE(HID_USAGE_PAGE_GENERIC, HID_USAGE_MULTI_AXIS,
+                               0, None)    # follow the keyboard focus
+        if not w.user32.RegisterRawInputDevices(
                 ctypes.byref(dev), 1, ctypes.sizeof(dev)):
             return False
         backend = self
@@ -288,26 +383,15 @@ class RawInputBackend:
             self.filter = None
 
     def _on_msg(self, msg_ptr: int) -> None:
-        import ctypes
-        from ctypes import wintypes
-
-        class MSG(ctypes.Structure):
-            _fields_ = [("hwnd", wintypes.HWND), ("message", wintypes.UINT),
-                        ("wParam", wintypes.WPARAM),
-                        ("lParam", wintypes.LPARAM),
-                        ("time", wintypes.DWORD), ("pt", wintypes.POINT)]
-
-        class RAWINPUTHEADER(ctypes.Structure):
-            _fields_ = [("dwType", wintypes.DWORD), ("dwSize", wintypes.DWORD),
-                        ("hDevice", wintypes.HANDLE),
-                        ("wParam", wintypes.WPARAM)]
-
-        msg = MSG.from_address(msg_ptr)
+        w = _win_api()
+        ctypes, wintypes = w.ctypes, w.wintypes
+        msg = w.MSG.from_address(msg_ptr)
         if msg.message != WM_INPUT:
             return
-        user32 = ctypes.windll.user32
+        user32 = w.user32
         size = wintypes.UINT(0)
-        hdr = ctypes.sizeof(RAWINPUTHEADER)
+        hdr = w.header_size
+        RAWINPUTHEADER = w.RAWINPUTHEADER
         user32.GetRawInputData(ctypes.c_void_p(msg.lParam), RID_INPUT, None,
                                ctypes.byref(size), hdr)
         if size.value == 0:

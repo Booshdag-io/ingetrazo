@@ -293,3 +293,39 @@ def test_wheel_notches_do_not_zoom_while_the_cap_moves_the_view(monkeypatch):
     monkeypatch.setattr(ndof_input, "_shared", None)
     notch()
     assert vp.camera.distance < d0                # an ordinary wheel zooms
+
+
+def _device_info(dw_type, page, usage):
+    # RID_DEVICE_INFO as Windows fills it: cbSize, dwType, then for a HID
+    # vendor, product, version and the usage page and usage.
+    return struct.pack("<IIIIIHH4x", 32, dw_type, 0x256F, 0xC635, 1,
+                       page, usage)
+
+
+def test_only_a_multi_axis_hid_counts_as_a_3d_mouse():
+    from views.ndof_input import is_multi_axis_info
+    assert is_multi_axis_info(_device_info(2, 0x01, 0x08))      # SpaceMouse
+    assert not is_multi_axis_info(_device_info(2, 0x01, 0x05))  # gamepad
+    assert not is_multi_axis_info(_device_info(2, 0x0C, 0x01))  # media keys
+    assert not is_multi_axis_info(_device_info(0, 0x01, 0x08))  # a mouse
+    assert not is_multi_axis_info(b"\0" * 8)
+
+
+def test_without_a_3d_mouse_windows_installs_no_message_filter(monkeypatch):
+    # Registering for a multi-axis device succeeds with none connected, so
+    # 0.5.9 ran its filter on every native message of every Windows user —
+    # building two ctypes classes each time (#751).
+    import views.ndof_input as ndof_input
+    monkeypatch.setattr(ndof_input, "_multi_axis_present", lambda: False)
+    backend = ndof_input.RawInputBackend(owner=None)
+    assert backend.open() is False
+    assert backend.filter is None
+
+
+def test_the_message_handler_defines_no_types_per_message():
+    import inspect
+
+    import views.ndof_input as ndof_input
+    source = inspect.getsource(ndof_input.RawInputBackend._on_msg)
+    assert "class " not in source
+    assert "Structure" not in source
