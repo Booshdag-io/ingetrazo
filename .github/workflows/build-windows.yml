@@ -115,6 +115,32 @@ jobs:
           ls -la dist/
           du -sh dist/ingetrazo/
 
+      # Without a working driver (none installed, Remote Desktop, a VM) Qt
+      # draws with opengl32sw.dll. The one in the PySide6 wheel is Mesa 11.2
+      # (2016): OpenGL 3.0, below the 3.3 the viewport needs, and IngeTrazo
+      # crashed on it within a minute of orbiting (#751, minipc 21-10). Swap
+      # in a current llvmpipe from mesa-dist-win (MIT): Mesa's opengl32.dll
+      # renamed to opengl32sw.dll, plus libgallium_wgl.dll beside it, which
+      # it imports. Both link only system DLLs. Version and hash pinned.
+      - name: Rasterizador por software (Mesa llvmpipe)
+        shell: bash
+        run: |
+          set -e
+          V=26.1.8
+          SHA=4c6d32e653e0ff9ad07796e40c0bcfabf2764d849e3ce4f3b1590112c87e42f9
+          curl -fsSL -o "$RUNNER_TEMP/mesa.7z" \
+            "https://github.com/pal1000/mesa-dist-win/releases/download/$V/mesa3d-$V-release-msvc.7z"
+          echo "$SHA  $RUNNER_TEMP/mesa.7z" | sha256sum -c -
+          7z x -y -bso0 -o"$RUNNER_TEMP/mesa" "$RUNNER_TEMP/mesa.7z" \
+            x64/opengl32.dll x64/libgallium_wgl.dll
+          SW="$(find dist/ingetrazo -iname opengl32sw.dll | head -1)"
+          test -n "$SW" || { echo "opengl32sw.dll no está en el bundle"; exit 1; }
+          echo "Qt: $SW ($(stat -c %s "$SW") bytes) -> Mesa $V"
+          cp "$RUNNER_TEMP/mesa/x64/opengl32.dll" "$SW"
+          cp "$RUNNER_TEMP/mesa/x64/libgallium_wgl.dll" "$(dirname "$SW")/"
+          cp packaging/windows/MESA-NOTICE.txt "$(dirname "$SW")/"
+          ls -la "$(dirname "$SW")"/opengl32sw.dll "$(dirname "$SW")"/libgallium_wgl.dll
+
       - name: Humo mínimo del bundle
         shell: bash
         run: |
@@ -142,6 +168,10 @@ jobs:
           test ! -e dist/ingetrazo/_internal/libssl-3-x64.dll
           test ! -e dist/ingetrazo/_internal/libcrypto-3-x64.dll
           test -f dist/ingetrazo/_internal/libssl-3.dll
+          # El rasterizador por software es el de Mesa actual (#751): una
+          # sola copia, con su libgallium al lado.
+          test "$(find dist/ingetrazo -iname opengl32sw.dll | wc -l)" = 1
+          test -f "$(dirname "$(find dist/ingetrazo -iname opengl32sw.dll)")/libgallium_wgl.dll"
           # Y el mismo --check que ya corren el tar, el AppImage y el snap
           # (release.yml), que Windows no tenía: cubre estos archivos y los
           # que se añadan después, sin que haya que acordarse de listarlos

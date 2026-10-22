@@ -3007,5 +3007,7 @@
  "Each entry on its own": "Setiap entri terpisah",
  "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "Cara entri ekstensi ditampilkan di menu klik kanan (langsung) dan di menu Ekstensi (saat dibuka lagi).",
  "Axes": "Sumbu",
- "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Menampilkan sumbu gambar merah, hijau, dan biru pada model. Inferensi di sepanjang sumbu tetap berfungsi saat sumbu disembunyikan."
+ "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Menampilkan sumbu gambar merah, hijau, dan biru pada model. Inferensi di sepanjang sumbu tetap berfungsi saat sumbu disembunyikan.",
+ "Graphics not supported": "Grafis tidak didukung",
+ "This computer gives IngeTrazo OpenGL {got}, and IngeTrazo needs OpenGL 3.3 ({renderer}). The program may close unexpectedly. Install or update the graphics driver from the manufacturer of your graphics card (Intel, AMD or NVIDIA) and open IngeTrazo again.": "Komputer ini memberi IngeTrazo OpenGL {got}, sedangkan IngeTrazo memerlukan OpenGL 3.3 ({renderer}). Program dapat tertutup secara tiba-tiba. Pasang atau perbarui driver grafis dari situs produsen kartu grafis Anda (Intel, AMD, atau NVIDIA), lalu buka IngeTrazo kembali."
 }

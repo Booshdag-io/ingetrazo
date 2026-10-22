@@ -3004,5 +3004,7 @@
  "Each entry on its own": "Каждый пункт отдельно",
  "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "Как пункты расширений показываются в контекстном меню (сразу) и в меню «Расширения» (при следующем запуске).",
  "Axes": "Оси",
- "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Показывает красную, зелёную и синюю оси рисования модели. Привязки вдоль них работают, даже когда оси скрыты."
+ "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Показывает красную, зелёную и синюю оси рисования модели. Привязки вдоль них работают, даже когда оси скрыты.",
+ "Graphics not supported": "Графика не поддерживается",
+ "This computer gives IngeTrazo OpenGL {got}, and IngeTrazo needs OpenGL 3.3 ({renderer}). The program may close unexpectedly. Install or update the graphics driver from the manufacturer of your graphics card (Intel, AMD or NVIDIA) and open IngeTrazo again.": "Этот компьютер предоставляет IngeTrazo OpenGL {got}, а IngeTrazo требуется OpenGL 3.3 ({renderer}). Программа может неожиданно закрыться. Установите или обновите графический драйвер с сайта производителя вашей видеокарты (Intel, AMD или NVIDIA) и снова откройте IngeTrazo."
 }

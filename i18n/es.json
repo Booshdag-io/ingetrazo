@@ -3004,5 +3004,7 @@
  "Each entry on its own": "Cada entrada por separado",
  "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "Cómo se muestran las entradas de las extensiones en el menú del botón derecho (al instante) y en el menú Extensiones (al volver a abrir).",
  "Axes": "Ejes",
- "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Muestra los ejes de dibujo rojo, verde y azul del modelo. La inferencia sobre ellos sigue funcionando aunque estén ocultos."
+ "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Muestra los ejes de dibujo rojo, verde y azul del modelo. La inferencia sobre ellos sigue funcionando aunque estén ocultos.",
+ "Graphics not supported": "Gráficos no compatibles",
+ "This computer gives IngeTrazo OpenGL {got}, and IngeTrazo needs OpenGL 3.3 ({renderer}). The program may close unexpectedly. Install or update the graphics driver from the manufacturer of your graphics card (Intel, AMD or NVIDIA) and open IngeTrazo again.": "Este equipo le da a IngeTrazo OpenGL {got} e IngeTrazo necesita OpenGL 3.3 ({renderer}). El programa puede cerrarse inesperadamente. Instale o actualice el controlador gráfico desde la página del fabricante de su tarjeta gráfica (Intel, AMD o NVIDIA) y vuelva a abrir IngeTrazo."
 }

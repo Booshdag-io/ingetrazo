@@ -15,9 +15,10 @@ layout resolves inside ``_internal/`` — so every data destination below
 mirrors the repo layout exactly.
 
 Rendering note (Windows): Qt 6 picks desktop OpenGL and falls back to the
-bundled software rasterizer (``opengl32sw.dll``, shipped by the PySide6
-wheel) when the driver can't give a 3.3 core context — both paths satisfy
-the viewport's requirements, no forcing needed.
+software rasterizer ``opengl32sw.dll`` when the driver can't give a 3.3
+core context. The one in the PySide6 wheel is a 2016 llvmpipe that only
+gives OpenGL 3.0 and crashed the viewport (#751), so build-windows.yml
+replaces it after this spec runs with a current Mesa llvmpipe (two DLLs).
 """
 import site
 import sys

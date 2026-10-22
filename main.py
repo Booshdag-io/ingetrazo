@@ -353,6 +353,25 @@ def _self_check() -> int:
                             or "qschannelbackend" not in have):
             problems.append("Qt TLS backend")
 
+    # The software rasteriser Qt falls back to without a working driver.
+    # The PySide6 wheel's opengl32sw.dll is a 2016 llvmpipe that gives
+    # OpenGL 3.0, and the viewport crashed on it within a minute (#751);
+    # the package swaps in a current Mesa llvmpipe, which is two files:
+    # opengl32sw.dll (Mesa's opengl32.dll) and libgallium_wgl.dll beside it.
+    if sys.platform == "win32":
+        try:
+            import PySide6
+            sw = Path(PySide6.__file__).parent / "opengl32sw.dll"
+            gallium = sw.with_name("libgallium_wgl.dll")
+            state = ("Mesa llvmpipe" if sw.is_file() and gallium.is_file()
+                     else "Qt's own (OpenGL 3.0)" if sw.is_file()
+                     else "MISSING")
+        except Exception as exc:  # noqa: BLE001
+            state, sw = f"({exc})", ""
+        print(f"  Software GL    : {state}  {sw}")
+        if is_frozen() and state != "Mesa llvmpipe":
+            problems.append("software OpenGL (Mesa llvmpipe)")
+
     if problems:
         print(f"\nNOT OK — missing: {', '.join(problems)}")
         return 1

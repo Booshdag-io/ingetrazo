@@ -1345,6 +1345,9 @@ class Viewport(QOpenGLWidget):
         # why orbiting crawls (a Windows box without a working driver).
         from core.glinfo import read_gl_info, write_gl_report
         self.gl_info = read_gl_info(self._gl)
+        from core.glinfo import context_version
+        self.gl_info["context"] = context_version(
+            self.context().format(), self.gl_info.get("version", ""))
         from PySide6.QtCore import QCoreApplication
         from PySide6.QtGui import QGuiApplication
         self.gl_info["platform"] = QGuiApplication.platformName()

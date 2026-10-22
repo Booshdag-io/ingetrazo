@@ -1,0 +1,44 @@
+Software OpenGL renderer bundled with IngeTrazo for Windows
+============================================================
+
+opengl32sw.dll and libgallium_wgl.dll are Mesa's llvmpipe software
+rasteriser, as built by the mesa-dist-win project:
+
+  Mesa            https://mesa3d.org            (source: https://gitlab.freedesktop.org/mesa/mesa)
+  mesa-dist-win   https://github.com/pal1000/mesa-dist-win  (release 26.1.8, mesa3d-26.1.8-release-msvc.7z)
+
+opengl32sw.dll is Mesa's opengl32.dll, renamed so that Qt uses it when the
+graphics driver cannot provide OpenGL 3.3. IngeTrazo does not modify either
+file.
+
+Mesa is distributed under the MIT license:
+
+  Copyright (C) 1999-2007 Brian Paul   All Rights Reserved.
+  Copyright (C) The Mesa 3D Graphics Library contributors.
+
+  Permission is hereby granted, free of charge, to any person obtaining a
+  copy of this software and associated documentation files (the "Software"),
+  to deal in the Software without restriction, including without limitation
+  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included
+  in all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+  OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  DEALINGS IN THE SOFTWARE.
+
+Some Mesa source files carry other permissive licenses; see
+https://docs.mesa3d.org/license.html for the full list.
+
+llvmpipe includes LLVM (https://llvm.org), distributed under the Apache
+License v2.0 with LLVM Exceptions: https://llvm.org/LICENSE.txt
+
+The mesa-dist-win build scripts are distributed under the MIT license,
+Copyright (c) pal1000: https://github.com/pal1000/mesa-dist-win/blob/master/LICENSE

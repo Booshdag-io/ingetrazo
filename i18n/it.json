@@ -3005,5 +3005,7 @@
  "Each entry on its own": "Ogni voce separata",
  "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "Come appaiono le voci delle estensioni nel menu del tasto destro (subito) e nel menu Estensioni (al prossimo avvio).",
  "Axes": "Assi",
- "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Mostra gli assi di disegno rosso, verde e blu del modello. L'inferenza lungo gli assi continua a funzionare anche quando sono nascosti."
+ "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Mostra gli assi di disegno rosso, verde e blu del modello. L'inferenza lungo gli assi continua a funzionare anche quando sono nascosti.",
+ "Graphics not supported": "Grafica non supportata",
+ "This computer gives IngeTrazo OpenGL {got}, and IngeTrazo needs OpenGL 3.3 ({renderer}). The program may close unexpectedly. Install or update the graphics driver from the manufacturer of your graphics card (Intel, AMD or NVIDIA) and open IngeTrazo again.": "Questo computer fornisce a IngeTrazo OpenGL {got}, ma IngeTrazo richiede OpenGL 3.3 ({renderer}). Il programma potrebbe chiudersi inaspettatamente. Installa o aggiorna il driver grafico dal sito del produttore della tua scheda grafica (Intel, AMD o NVIDIA) e riapri IngeTrazo."
 }

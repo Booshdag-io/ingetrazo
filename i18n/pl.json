@@ -3012,5 +3012,7 @@
  "Each entry on its own": "Każda pozycja osobno",
  "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "Jak pozycje rozszerzeń są wyświetlane w menu prawego przycisku (od razu) i w menu Rozszerzenia (po ponownym uruchomieniu).",
  "Axes": "Osie",
- "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Pokazuje czerwoną, zieloną i niebieską oś rysowania modelu. Przyciąganie wzdłuż osi działa nadal, gdy są ukryte."
+ "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Pokazuje czerwoną, zieloną i niebieską oś rysowania modelu. Przyciąganie wzdłuż osi działa nadal, gdy są ukryte.",
+ "Graphics not supported": "Grafika nieobsługiwana",
+ "This computer gives IngeTrazo OpenGL {got}, and IngeTrazo needs OpenGL 3.3 ({renderer}). The program may close unexpectedly. Install or update the graphics driver from the manufacturer of your graphics card (Intel, AMD or NVIDIA) and open IngeTrazo again.": "Ten komputer udostępnia IngeTrazo OpenGL {got}, a IngeTrazo wymaga OpenGL 3.3 ({renderer}). Program może nieoczekiwanie się zamknąć. Zainstaluj lub zaktualizuj sterownik graficzny ze strony producenta karty graficznej (Intel, AMD lub NVIDIA) i ponownie uruchom IngeTrazo."
 }

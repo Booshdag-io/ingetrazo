@@ -3004,5 +3004,7 @@
  "Each entry on its own": "Jeder Eintrag einzeln",
  "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "Wie die Einträge der Erweiterungen im Rechtsklickmenü (sofort) und im Menü Erweiterungen (beim nächsten Start) erscheinen.",
  "Axes": "Achsen",
- "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Zeigt die roten, grünen und blauen Zeichenachsen des Modells. Die Inferenz entlang der Achsen funktioniert auch, wenn sie ausgeblendet sind."
+ "Show the model's red, green and blue drawing axes. Inference along them keeps working while they are hidden.": "Zeigt die roten, grünen und blauen Zeichenachsen des Modells. Die Inferenz entlang der Achsen funktioniert auch, wenn sie ausgeblendet sind.",
+ "Graphics not supported": "Grafik wird nicht unterstützt",
+ "This computer gives IngeTrazo OpenGL {got}, and IngeTrazo needs OpenGL 3.3 ({renderer}). The program may close unexpectedly. Install or update the graphics driver from the manufacturer of your graphics card (Intel, AMD or NVIDIA) and open IngeTrazo again.": "Dieser Computer stellt IngeTrazo OpenGL {got} bereit, IngeTrazo benötigt aber OpenGL 3.3 ({renderer}). Das Programm kann unerwartet beendet werden. Installieren oder aktualisieren Sie den Grafiktreiber von der Website des Herstellers Ihrer Grafikkarte (Intel, AMD oder NVIDIA) und öffnen Sie IngeTrazo erneut."
 }

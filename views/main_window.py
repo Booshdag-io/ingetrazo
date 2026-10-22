@@ -2803,6 +2803,23 @@ class MainWindow(QMainWindow):
     def _on_gl_ready(self, info: dict) -> None:
         """A viewport drawn on the CPU is the usual reason a Windows machine
         reports IngeTrazo as unusably slow; say so where the user looks."""
+        from core.glinfo import below_minimum
+        if below_minimum(info) and not getattr(self, "_gl_warned", False):
+            # A context older than the shaders: drawing on it ends in a
+            # crash minutes later, with nothing to tell why (#751). Said
+            # once, after the window is up, never from inside initializeGL.
+            self._gl_warned = True
+            major, minor = info["context"]
+            QTimer.singleShot(0, lambda: QMessageBox.warning(
+                self, tr("Graphics not supported"), tr(
+                    "This computer gives IngeTrazo OpenGL {got}, and IngeTrazo "
+                    "needs OpenGL 3.3 ({renderer}). The program may close "
+                    "unexpectedly. Install or update the graphics driver "
+                    "from the manufacturer of your graphics card (Intel, AMD "
+                    "or NVIDIA) and open IngeTrazo again.",
+                    got=f"{major}.{minor}",
+                    renderer=info.get("renderer", ""))))
+            return
         if info.get("software"):
             self.statusBar().showMessage(tr(
                 "IngeTrazo is drawing with the software renderer ({renderer}): "
